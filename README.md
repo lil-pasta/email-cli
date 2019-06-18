@@ -9,4 +9,5 @@ There are a number of short comments with different features and functions to im
 
 ## To run:
 `pip3 install -r requirements.txt`
+
 `python3 gmail-py.py`
