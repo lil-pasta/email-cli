@@ -1,4 +1,5 @@
 import os, datetime, email
+import re
 import smtplib
 from imapclient import IMAPClient
 from dotenv import load_dotenv
@@ -63,8 +64,8 @@ class EmailIMAP(IMAPClient):
 
 
 def send_email():
-    email = EmailSMTP()
-    server = email.beginConnection()
+    newEmail = EmailSMTP()
+    server = newEmail.beginConnection()
     # Better UI
     # Need to add exception handling
     # Ability to switch smtp address based on users email
@@ -74,10 +75,18 @@ def send_email():
     # ability to upload one or more files
     # add a signature
     recipient = input("Whos it to?")
+
+    while not is_email(recipient):
+        recipient = input('Please enter a valid email address or press 1. to go back to the main menu\n')
+        if recipient == '1':
+            menu_select()
+        else:
+            continue
+
     subject = "Subject: " + input("What is the subject line? \n")+"\n"
     body = input("What is the text body? \n")
     emailText = subject + body
-    email.sendMail(server, recipient, emailText)
+    newEmail.sendMail(server, recipient, emailText)
     menu_select()
 
 def view_email():
@@ -87,19 +96,27 @@ def view_email():
     # Ability to delete and respond to emails
     # show cc and bcc
     # html body support (smarter parsing of email body)
-    email = EmailIMAP(IMAP_ADDRESS)
-    server = email.beginConnection()
-    email.getRecentUnread(server)
+    # instead of showing just unread show a paginated list of emails and mark read/unread/starred and important
+    inbox = EmailIMAP(IMAP_ADDRESS)
+    server = inbox.beginConnection()
+    inbox.getRecentUnread(server)
     print('Would you like to:\n1. Open an unread email')
     print('2. Return to main menu')
     response = input('>>>')
     if response == '1':
         msgid = int(input('Whats the UID of the email you wish to read?\n>>>'))
-        email.getEmail(server, msgid)
+        inbox.getEmail(server, msgid)
         input('Hit enter when you\'re ready.')
         menu_select()
     elif response == '2':
         menu_select()
+
+def is_email(email):
+    validAddress = re.compile(r'\b[a-zA-Z0-9\.\-\_]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}\b')
+    if validAddress.match(email):
+        return True
+    else:
+        return False
 
 def menu_select():
     print("Select an option:")
