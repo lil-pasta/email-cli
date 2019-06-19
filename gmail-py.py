@@ -1,5 +1,7 @@
 import os, datetime, email
 import re
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 import smtplib
 from imapclient import IMAPClient
 from dotenv import load_dotenv
@@ -69,24 +71,55 @@ def send_email():
     # Better UI
     # Need to add exception handling
     # Ability to switch smtp address based on users email
-    # CC and BCC
     # Options to input html emails
     # formatting options
     # ability to upload one or more files
     # add a signature
-    recipient = input("Whos it to?")
 
-    while not is_email(recipient):
-        recipient = input('Please enter a valid email address or press 1. to go back to the main menu\n')
-        if recipient == '1':
-            menu_select()
-        else:
-            continue
+    toAddr, ccAddr, bccAddr = [], [], []
 
-    subject = "Subject: " + input("What is the subject line? \n")+"\n"
-    body = input("What is the text body? \n")
-    emailText = subject + body
-    newEmail.sendMail(server, recipient, emailText)
+    newAddr = ''
+    print('Type in an address then press enter.')
+    print('Then type \'done\' and press enter once you are done add recipients')
+    while newAddr != 'done':
+        newAddr = input('>>>')
+        if newAddr != 'done' and is_email(newAddr):
+            toAddr.append(newAddr)
+        elif newAddr != 'done' and not is_email(newAddr):
+            print('Please enter a valid email or type \'done\'')
+
+    newAddr = ''
+    print('Type in an address to cc then press enter.')
+    print('Then type \'done\' and press enter once you are done add recipients')
+    while newAddr != 'done':
+        newAddr = input('>>>')
+        if newAddr != 'done' and is_email(newAddr):
+            ccAddr.append(newAddr)
+        elif newAddr != 'done' and not is_email(newAddr):
+            print('Please enter a valid email or type \'done\'')
+
+    newAddr = ''
+    print('Type in an address to bcc then press enter.')
+    print('Then type \'done\' and press enter once you are done add recipients')
+    while newAddr != 'done':
+        newAddr = input('>>>')
+        if newAddr != 'done' and is_email(newAddr):
+            bccAddr.append(newAddr)
+        elif newAddr != 'done' and not is_email(newAddr):
+            print('Please enter a valid email or type \'done\'')
+
+    subject = input("What is the subject line? \n")+"\n"
+    body = input("What is the body of the text \n")
+    emailMsg = MIMEMultipart()
+    emailMsg['From'] = EMAIL_ADDRESS
+    emailMsg['To'] = ", ".join(toAddr)
+    emailMsg['CC'] = ", ".join(ccAddr)
+    emailMsg['Subject'] = subject
+    emailMsg.attach(MIMEText(body, 'plain'))
+
+    toaddrs = toAddr + ccAddr + bccAddr
+
+    newEmail.sendMail(server, toaddrs, emailMsg.as_string())
     menu_select()
 
 def view_email():
@@ -107,12 +140,12 @@ def view_email():
         msgid = int(input('Whats the UID of the email you wish to read?\n>>>'))
         inbox.getEmail(server, msgid)
         input('Hit enter when you\'re ready.')
-        menu_select()
+        view_email()
     elif response == '2':
         menu_select()
 
 def is_email(email):
-    validAddress = re.compile(r'\b[a-zA-Z0-9\.\-\_]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}\b')
+    validAddress = re.compile(r'^[a-zA-Z0-9\.\-\_]+@[a-zA-Z0-9\.\-]+\.[a-zA-Z]{2,}$')
     if validAddress.match(email):
         return True
     else:
