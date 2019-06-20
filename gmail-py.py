@@ -77,7 +77,7 @@ def send_email():
     # add a signature
 
     toAddr, ccAddr, bccAddr = [], [], []
-
+    #maybe try and convert this into a function or two?
     newAddr = ''
     print('Type in an address then press enter.')
     print('Then type \'done\' and press enter once you are done add recipients')
