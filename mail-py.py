@@ -116,6 +116,7 @@ def generate_message():
     return payload
 
 def add_attachment():
+    # add multiple items
     # make this function better.
     f = input('What file would you like to attach? If none type \'none\' to continue\n>>>')
     print(basename(f))
@@ -145,7 +146,6 @@ def send_email():
     # Ability to switch smtp address based on users email
     # Options to input html emails
     # formatting options
-    # ability to upload one or more files
     # add a signature
 
     msg = generate_message()
